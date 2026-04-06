@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", sans-serif;
+}
+
+:root {
+  --app-bg: #08111f;
+  --app-bg-soft: rgba(9, 20, 37, 0.84);
+  --app-surface: rgba(9, 20, 37, 0.74);
+  --app-surface-strong: rgba(12, 24, 43, 0.92);
+  --app-border: rgba(148, 163, 184, 0.16);
+  --app-border-strong: rgba(125, 211, 252, 0.22);
+  --app-shadow: 0 24px 80px rgba(4, 10, 24, 0.45);
+}
+
+html,
+body,
+#__nuxt {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 32%),
+    radial-gradient(circle at 80% 20%, rgba(45, 212, 191, 0.14), transparent 26%),
+    linear-gradient(180deg, #07111f 0%, #091729 48%, #050b16 100%);
+  color: #f8fafc;
+}
+
+::selection {
+  background: rgba(125, 211, 252, 0.3);
+}
+
+.auth-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: clip;
+  padding: 2rem 0;
+}
+
+.auth-shell__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.16), transparent 0 34%),
+    radial-gradient(circle at 85% 15%, rgba(45, 212, 191, 0.13), transparent 0 28%),
+    radial-gradient(circle at 50% 100%, rgba(14, 165, 233, 0.18), transparent 0 32%);
+  filter: blur(20px);
+}
+
+.auth-shell__grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.hero-panel {
+  display: grid;
+  gap: 1.5rem;
+  height: 100%;
+  padding: 1.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: 2rem;
+  background:
+    linear-gradient(180deg, rgba(8, 17, 31, 0.84), rgba(7, 13, 24, 0.72)),
+    linear-gradient(135deg, rgba(56, 189, 248, 0.06), rgba(45, 212, 191, 0.04));
+  box-shadow: var(--app-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.feature-card,
+.stat-card,
+.workspace-card,
+.workspace-header,
+.login-card {
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.feature-card {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto 1fr;
+  padding: 1rem;
+  border-radius: 1.5rem;
+}
+
+.feature-card__icon,
+.workspace-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.26), rgba(45, 212, 191, 0.18));
+  border: 1px solid var(--app-border-strong);
+}
+
+.stat-card {
+  padding: 1rem 1.1rem;
+  border-radius: 1.25rem;
+}
+
+.login-card {
+  border-radius: 2rem;
+}
+
+.workspace-page {
+  min-height: 100vh;
+  padding: 3rem 0;
+}
+
+.workspace-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 1.75rem;
+}
+
+.workspace-card {
+  border-radius: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    padding: 2.5rem 0;
+  }
+
+  .auth-shell__grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(420px, 0.8fr);
+    min-height: calc(100vh - 5rem);
+  }
+
+  .hero-panel {
+    padding: 2rem;
+  }
+
+  .workspace-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
