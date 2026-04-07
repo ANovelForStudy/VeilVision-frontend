@@ -21,31 +21,19 @@ export function useSignInForm() {
     remember: true
   })
 
-  const demoAccess = {
-    email: demoCredentials.email,
-    password: demoCredentials.password
-  }
-
-  function fillDemoAccess() {
-    state.email = demoAccess.email
-    state.password = demoAccess.password
-    state.remember = true
-    formError.value = ''
-  }
-
   function validate(values: Partial<LoginCredentials>): FormError[] {
     const errors: FormError[] = []
     const email = values.email?.trim() || ''
     const password = values.password?.trim() || ''
 
     if (!email) {
-      errors.push({ name: 'email', message: 'Введите рабочий email.' })
+      errors.push({ name: 'email', message: 'Введите корпоративный email оператора или исследователя.' })
     } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      errors.push({ name: 'email', message: 'Формат email выглядит некорректным.' })
+      errors.push({ name: 'email', message: 'Проверьте формат email для доступа в исследовательский контур.' })
     }
 
     if (!password) {
-      errors.push({ name: 'password', message: 'Введите пароль.' })
+      errors.push({ name: 'password', message: 'Введите пароль доступа к панели мониторинга.' })
     } else if (password.length < 8) {
       errors.push({ name: 'password', message: 'Пароль должен содержать минимум 8 символов.' })
     }
@@ -60,13 +48,11 @@ export function useSignInForm() {
       await sessionStore.signIn({ ...state })
       await navigateTo('/workspace')
     } catch (error) {
-      formError.value = error instanceof Error ? error.message : 'Не удалось выполнить вход.'
+      formError.value = error instanceof Error ? error.message : 'Не удалось выполнить вход в систему мониторинга.'
     }
   }
 
   return {
-    demoAccess,
-    fillDemoAccess,
     formError,
     passwordVisible,
     sessionStore,

@@ -2,8 +2,8 @@
 import LoginShell from '~/widgets/auth/login-shell/ui/LoginShell.vue'
 
 useSeoMeta({
-  title: 'Вход в систему',
-  description: 'Авторизация во внутренней платформе Signal Research Hub.'
+  title: 'YOLO FireWatch Lab | Вход в систему',
+  description: 'Авторизация во внутренней платформе превентивного мониторинга для раннего обнаружения задымления и возгораний.'
 })
 </script>
 

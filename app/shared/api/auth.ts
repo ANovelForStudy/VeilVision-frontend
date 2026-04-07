@@ -1,14 +1,14 @@
 import type { LoginCredentials, LoginResponse } from '~/entities/session/model/types'
 
 const DEMO_ACCOUNT = {
-  email: 'research@signal-inc.io',
-  password: 'NuxtUI2026!',
+  email: 'operator@yolo-firewatch.ai',
+  password: 'YOLO-Fire-2026!',
   user: {
     id: 'usr_01',
     name: 'Elena Volkova',
-    email: 'research@signal-inc.io',
-    role: 'Lead Research Analyst',
-    workspace: 'Signal Research Hub'
+    email: 'operator@yolo-firewatch.ai',
+    role: 'Computer Vision Engineer',
+    workspace: 'YOLO FireWatch Lab'
   }
 } as const
 
@@ -21,7 +21,7 @@ export async function loginWithEmail(credentials: LoginCredentials): Promise<Log
   const password = credentials.password.trim()
 
   if (email !== DEMO_ACCOUNT.email || password !== DEMO_ACCOUNT.password) {
-    throw new Error('Неверный email или пароль. Используйте демонстрационные данные ниже.')
+    throw new Error('Неверный email или пароль. Используйте демонстрационный доступ оператора ниже.')
   }
 
   return {
