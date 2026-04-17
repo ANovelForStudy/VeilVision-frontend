@@ -400,6 +400,12 @@ onMounted(() => {
 							<div class="camera-row__preview">
 								<div class="camera-row__scanline" />
 								<span class="camera-row__preview-label">LIVE</span>
+								<div class="video-container">
+									<iframe
+										:src="`http://localhost:8889/stream`"
+										allow="camera; microphone; display-capture; autoplay"
+									/>
+								</div>
 							</div>
 							<div class="camera-row__identity">
 								<h3 class="camera-row__name">{{ camera.name }}</h3>
@@ -839,6 +845,23 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.video-container {
+	position: relative;
+	width: 120%;
+	height: 0;
+	padding-bottom: 65%; /* 16:9 = 9/16 = 0.5625 */
+}
+
+.video-container iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	z-index: -1;
+}
+
 .cameras-page {
 	min-height: 100vh;
 	padding: 0.9rem 0 1.4rem;
@@ -1181,7 +1204,7 @@ onMounted(() => {
 	background:
 		radial-gradient(circle at 12% 18%, rgba(56, 189, 248, 0.2), transparent 0 26%),
 		radial-gradient(circle at 84% 20%, rgba(248, 113, 113, 0.18), transparent 0 24%),
-		linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+		linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.03));
 }
 
 .manage-modal__preview {
@@ -1193,18 +1216,18 @@ onMounted(() => {
 	position: absolute;
 	inset: 0;
 	background:
-		linear-gradient(180deg, transparent, rgba(248, 250, 252, 0.08), transparent),
-		repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 6px);
+		linear-gradient(180deg, transparent, rgba(248, 250, 252, 0.01), transparent),
+		repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0 2px, transparent 2px 6px);
 	animation: scanline 4.5s linear infinite;
 }
 
 .camera-row__preview-label {
 	position: absolute;
-	top: 0.65rem;
-	left: 0.65rem;
-	padding: 0.25rem 0.45rem;
+	top: 0.25rem;
+	left: 0.45rem;
+	padding: 0.25rem 0.35rem;
 	border-radius: 999px;
-	background: rgba(15, 23, 42, 0.82);
+	background: rgba(15, 23, 42, 0.45);
 	font-size: 0.7rem;
 	letter-spacing: 0.12em;
 	color: #f8fafc;

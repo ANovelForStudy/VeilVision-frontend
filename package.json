@@ -20,5 +20,6 @@
     "tailwindcss": "^4.2.2",
     "vue": "^3.5.31",
     "vue-router": "^5.0.4"
-  }
+  },
+  "version": "0.0.1"
 }
