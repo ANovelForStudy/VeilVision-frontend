@@ -8,7 +8,7 @@ import type { LoginCredentials, SessionUser } from './types'
 export const useSessionStore = defineStore('session', () => {
   const token = useStorage<string | null>('session-token', null)
   const user = useStorage<SessionUser | null>('session-user', null)
-  const lastLoginEmail = useStorage('last-login-email', 'research@signal-inc.io')
+  const lastLoginEmail = useStorage('last-login-email', 'operator@yolo-firewatch.ai')
   const status = ref<'idle' | 'loading' | 'authenticated'>('idle')
   const error = ref('')
 
@@ -29,7 +29,7 @@ export const useSessionStore = defineStore('session', () => {
       return response.user
     } catch (err) {
       status.value = 'idle'
-      error.value = err instanceof Error ? err.message : 'Не удалось выполнить вход.'
+      error.value = err instanceof Error ? err.message : 'Не удалось подключиться к защищённому контуру мониторинга.'
       throw err
     }
   }
