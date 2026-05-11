@@ -2,7 +2,10 @@ import type { Camera, CameraPayload, CameraSource } from "~/entities/camera/mode
 import { apiRequest } from "~/shared/api/http";
 
 interface CameraRecord {
-	id?: string;
+	id?: string | number;
+	camera_id?: string | number;
+	cameraId?: string | number;
+	uuid?: string;
 	name?: string;
 	rtsp_url?: string;
 	webrtc_url?: string;
@@ -17,8 +20,24 @@ export async function fetchCameras(): Promise<Camera[]> {
 }
 
 export async function fetchCameraById(id: string): Promise<Camera> {
-	const response = await apiRequest<CameraRecord>(`/cameras/${id}/`);
-	return normalizeCamera(response);
+	try {
+		const response = await apiRequest<CameraRecord>(`/cameras/${id}/`);
+		return normalizeCamera(response);
+	} catch {
+		try {
+			const response = await apiRequest<CameraRecord>(`/cameras/${id}`);
+			return normalizeCamera(response);
+		} catch {
+			const cameras = await fetchCameras();
+			const matchedCamera = cameras.find((camera) => String(camera.id) === String(id));
+
+			if (!matchedCamera) {
+				throw new Error("Камера не найдена.");
+			}
+
+			return matchedCamera;
+		}
+	}
 }
 
 export async function createCamera(payload: CameraPayload): Promise<Camera> {
@@ -31,12 +50,21 @@ export async function createCamera(payload: CameraPayload): Promise<Camera> {
 }
 
 export async function updateCamera(id: string, payload: CameraPayload): Promise<Camera> {
-	const response = await apiRequest<CameraRecord, CameraSource>(`/cameras/${id}`, {
-		method: "PUT",
-		body: toCameraSource(payload),
-	});
+	try {
+		const response = await apiRequest<CameraRecord, CameraSource>(`/cameras/${id}/`, {
+			method: "PATCH",
+			body: toCameraSource(payload),
+		});
 
-	return normalizeCamera(response);
+		return normalizeCamera(response);
+	} catch {
+		const response = await apiRequest<CameraRecord, CameraSource>(`/cameras/${id}`, {
+			method: "PATCH",
+			body: toCameraSource(payload),
+		});
+
+		return normalizeCamera(response);
+	}
 }
 
 export async function deleteCamera(id: string): Promise<void> {
@@ -46,8 +74,10 @@ export async function deleteCamera(id: string): Promise<void> {
 }
 
 function normalizeCamera(camera: CameraRecord): Camera {
+	const resolvedId = camera.id ?? camera.camera_id ?? camera.cameraId ?? camera.uuid;
+
 	return {
-		id: camera.id ?? crypto.randomUUID(),
+		id: resolvedId ? String(resolvedId) : crypto.randomUUID(),
 		name: camera.name ?? "Untitled camera",
 		rtsp_url: camera.rtsp_url ?? "",
 		webrtc_url: camera.webrtc_url ?? "",

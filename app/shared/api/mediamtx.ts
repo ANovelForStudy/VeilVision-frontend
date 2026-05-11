@@ -37,5 +37,21 @@ export async function listMediaMtxPaths(): Promise<MediaMtxPath[]> {
 }
 
 export function normalizeWebRtcUrl(url: string) {
-	return url.trim();
+	const trimmed = url.trim();
+
+	if (!trimmed) {
+		return "";
+	}
+
+	try {
+		const parsedUrl = new URL(trimmed);
+
+		if (!parsedUrl.pathname.endsWith("/")) {
+			parsedUrl.pathname = `${parsedUrl.pathname}/`;
+		}
+
+		return parsedUrl.toString();
+	} catch {
+		return trimmed;
+	}
 }

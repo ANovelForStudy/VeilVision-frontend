@@ -26,6 +26,8 @@ const createForm = ref<CameraPayload>({
 	location: "",
 });
 
+const hasActiveFilter = computed(() => Boolean(searchQuery.value.trim()));
+
 const filteredCameras = computed(() => {
 	const query = searchQuery.value.trim().toLowerCase();
 
@@ -34,13 +36,9 @@ const filteredCameras = computed(() => {
 	}
 
 	return cameras.value.filter((camera) =>
-		[
-			camera.name,
-			camera.location,
-			camera.description,
-			camera.rtsp_url,
-			camera.webrtc_url,
-		].some((value) => value.toLowerCase().includes(query)),
+		[camera.name, camera.location, camera.description, camera.rtsp_url, camera.webrtc_url].some((value) =>
+			value.toLowerCase().includes(query),
+		),
 	);
 });
 
@@ -124,6 +122,10 @@ function resetCreateForm() {
 	};
 }
 
+function resetSearch() {
+	searchQuery.value = "";
+}
+
 function openWebRtcStream(camera: Camera) {
 	if (!process.client || !camera.webrtc_url) {
 		return;
@@ -132,14 +134,16 @@ function openWebRtcStream(camera: Camera) {
 	window.open(normalizeWebRtcUrl(camera.webrtc_url), "_blank", "noopener,noreferrer");
 }
 
+function openCameraDetails(cameraId: string) {
+	return navigateTo(`/cameras/${encodeURIComponent(String(cameraId))}`);
+}
+
 useSeoMeta({
 	title: "YOLO FireWatch Lab | Камеры",
-	description: "Список камер, встроенный WebRTC предпросмотр и переход к карточке каждой камеры.",
+	description: "Реестр камер видеомониторинга: поиск, просмотр, создание и переход к детальной карточке камеры.",
 });
 
-onMounted(() => {
-	fetchCameras();
-});
+onMounted(fetchCameras);
 </script>
 
 <template>
@@ -154,7 +158,8 @@ onMounted(() => {
 					<div>
 						<h1 class="cameras-title">Камеры</h1>
 						<p class="cameras-subtitle">
-							Предпросмотр в карточке работает через `webrtc_url`, потому что браузер не воспроизводит `rtsp://` напрямую.
+							Центральный реестр подключённых камер: здесь можно быстро найти нужную точку, открыть её
+							карточку, проверить поток и управлять составом видеоконтуров.
 						</p>
 					</div>
 				</div>
@@ -171,15 +176,14 @@ onMounted(() => {
 						</div>
 					</div>
 
-					<UButton
-						color="primary"
-						size="lg"
-						icon="i-lucide-plus"
-						class="cameras-add-btn"
-						@click="openCreateModal"
-					>
-						Добавить камеру
-					</UButton>
+					<div class="hero-actions-row">
+						<UButton color="neutral" variant="outline" size="lg" icon="i-lucide-layout-dashboard" to="/dashboard">
+							На dashboard
+						</UButton>
+						<UButton color="primary" size="lg" icon="i-lucide-plus" class="cameras-add-btn" @click="openCreateModal">
+							Добавить камеру
+						</UButton>
+					</div>
 				</div>
 			</header>
 
@@ -192,8 +196,20 @@ onMounted(() => {
 						variant="subtle"
 						icon="i-lucide-search"
 						placeholder="Название, описание, локация, RTSP или WebRTC URL"
-						class="control-input"
 					/>
+				</div>
+
+				<div class="control-panel__actions">
+					<UButton
+						color="neutral"
+						variant="outline"
+						size="xl"
+						icon="i-lucide-rotate-ccw"
+						:disabled="!hasActiveFilter"
+						@click="resetSearch"
+					>
+						Сбросить фильтр
+					</UButton>
 				</div>
 
 				<div class="control-panel__result">
@@ -224,11 +240,7 @@ onMounted(() => {
 				/>
 
 				<div v-if="isLoading" class="camera-list">
-					<div
-						v-for="index in 4"
-						:key="`camera-skeleton-${index}`"
-						class="camera-card camera-card--skeleton"
-					/>
+					<div v-for="index in 4" :key="`camera-skeleton-${index}`" class="camera-card camera-card--skeleton" />
 				</div>
 
 				<div v-else-if="filteredCameras.length === 0" class="cameras-empty">
@@ -236,91 +248,93 @@ onMounted(() => {
 						<UIcon name="i-lucide-camera-off" />
 					</div>
 					<h3>Камеры не найдены</h3>
-					<p>Измени поисковый запрос или добавь новую камеру.</p>
+					<p>Измени поисковый запрос или добавь новую камеру в реестр.</p>
 				</div>
 
 				<div v-else class="camera-list">
-					<article
-						v-for="camera in filteredCameras"
-						:key="camera.id"
-						class="camera-card"
-					>
-						<CameraPreview
-							:title="camera.name"
-							:location="camera.location"
-							:webrtc-url="camera.webrtc_url"
-							compact
-						/>
+					<article v-for="camera in filteredCameras" :key="camera.id" class="camera-card">
+						<div class="camera-card__preview-column">
+							<CameraPreview
+								:title="camera.name"
+								:location="camera.location"
+								:webrtc-url="camera.webrtc_url"
+								compact
+							/>
+						</div>
 
-						<div class="camera-card__body">
-							<div class="camera-card__identity">
-								<div>
-									<h3 class="camera-card__name">{{ camera.name }}</h3>
+						<div class="camera-card__content">
+							<div class="camera-card__topbar">
+								<div class="camera-card__identity">
+									<div class="camera-card__identity-main">
+										<div>
+											<p class="camera-card__eyebrow">Камера</p>
+											<h3 class="camera-card__name">{{ camera.name }}</h3>
+										</div>
+										<UBadge color="success" variant="soft" class="camera-card__status">
+											Подключена
+										</UBadge>
+									</div>
 									<p class="camera-card__location">
 										<UIcon name="i-lucide-map-pin" />
 										{{ camera.location }}
 									</p>
 								</div>
-
-								<UBadge color="primary" variant="subtle" class="camera-card__badge">
-									WebRTC Preview
-								</UBadge>
 							</div>
 
 							<p v-if="camera.description" class="camera-card__description">
 								{{ camera.description }}
 							</p>
 
-							<div class="camera-card__meta">
+							<div class="camera-card__signal-grid">
 								<div class="camera-card__field">
 									<span>RTSP source</span>
 									<strong>{{ camera.rtsp_url }}</strong>
 								</div>
-								<div class="camera-card__field">
-									<span>WebRTC endpoint</span>
-									<strong>{{ camera.webrtc_url }}</strong>
+
+								<div class="camera-card__field camera-card__field--webrtc">
+									<div class="camera-card__field-copy">
+										<span>WebRTC endpoint</span>
+										<strong>{{ camera.webrtc_url }}</strong>
+									</div>
+									<UButton
+										color="primary"
+										size="sm"
+										icon="i-lucide-external-link"
+										class="camera-meta-row__action"
+										@click="openWebRtcStream(camera)"
+									>
+										Открыть WebRTC напрямую в браузере
+									</UButton>
 								</div>
 							</div>
-						</div>
 
-						<div class="camera-card__actions">
-							<UButton
-								color="neutral"
-								variant="outline"
-								size="lg"
-								icon="i-lucide-square-arrow-out-up-right"
-								:to="`/cameras/${camera.id}`"
-							>
-								Открыть карточку камеры
-							</UButton>
-							<UButton
-								color="primary"
-								size="lg"
-								icon="i-lucide-external-link"
-								@click="openWebRtcStream(camera)"
-							>
-								Открыть WebRTC напрямую в браузере
-							</UButton>
-							<UButton
-								color="error"
-								variant="soft"
-								size="lg"
-								icon="i-lucide-trash-2"
-								@click="promptDeleteCamera(camera)"
-							>
-								Удалить
-							</UButton>
+							<div class="camera-card__footer">
+								<UButton
+									color="neutral"
+									variant="ghost"
+									size="sm"
+									icon="i-lucide-square-arrow-out-up-right"
+									@click="openCameraDetails(camera.id)"
+								>
+									Карточка камеры
+								</UButton>
+								<UButton
+									color="error"
+									variant="soft"
+									size="sm"
+									icon="i-lucide-trash-2"
+									@click="promptDeleteCamera(camera)"
+								>
+									Удалить
+								</UButton>
+							</div>
 						</div>
 					</article>
 				</div>
 			</section>
 		</UContainer>
 
-		<UModal
-			:open="isCreateModalOpen"
-			:content="{ class: 'sm:max-w-2xl' }"
-			@update:open="isCreateModalOpen = $event"
-		>
+		<UModal :open="isCreateModalOpen" :content="{ class: 'sm:max-w-2xl' }" @update:open="isCreateModalOpen = $event">
 			<template #content>
 				<UCard
 					:ui="{
@@ -338,13 +352,7 @@ onMounted(() => {
 								<h3 class="modal-title">Добавление камеры</h3>
 								<p class="modal-subtitle">Форма отправляет данные напрямую в POST endpoint камеры.</p>
 							</div>
-							<UButton
-								color="neutral"
-								variant="ghost"
-								icon="i-lucide-x"
-								size="sm"
-								@click="isCreateModalOpen = false"
-							/>
+							<UButton color="neutral" variant="ghost" icon="i-lucide-x" size="sm" @click="isCreateModalOpen = false" />
 						</div>
 					</template>
 
@@ -387,9 +395,6 @@ onMounted(() => {
 									placeholder="http://127.0.0.1:8889/camera-1/"
 									required
 								/>
-								<p class="form-hint">
-									Этот URL используется и для встроенного предпросмотра, и для открытия потока в новой вкладке.
-								</p>
 							</div>
 						</div>
 					</form>
@@ -399,13 +404,7 @@ onMounted(() => {
 							<UButton color="neutral" variant="outline" size="lg" @click="isCreateModalOpen = false">
 								Отмена
 							</UButton>
-							<UButton
-								color="primary"
-								size="lg"
-								:loading="isSubmitting"
-								class="modal-submit-button"
-								@click="submitCreateCamera"
-							>
+							<UButton color="primary" size="lg" :loading="isSubmitting" class="modal-submit-button" @click="submitCreateCamera">
 								Создать камеру
 							</UButton>
 						</div>
@@ -414,13 +413,15 @@ onMounted(() => {
 			</template>
 		</UModal>
 
-		<UModal
-			:open="isDeleteModalOpen"
-			:content="{ class: 'sm:max-w-md' }"
-			@update:open="isDeleteModalOpen = $event"
-		>
+		<UModal :open="isDeleteModalOpen" :content="{ class: 'sm:max-w-md' }" @update:open="isDeleteModalOpen = $event">
 			<template #content>
-				<UCard>
+				<UCard
+					:ui="{
+						body: { padding: 'p-5' },
+						header: { padding: 'p-5' },
+						footer: { padding: 'p-5' },
+					}"
+				>
 					<template #header>
 						<div class="modal-header modal-header--danger">
 							<div class="modal-header__icon modal-header__icon--danger">
@@ -434,22 +435,15 @@ onMounted(() => {
 					</template>
 
 					<div class="delete-confirm">
-						<p>
-							Удалить камеру <strong>{{ cameraToDelete?.name }}</strong> из реестра?
-						</p>
+						<p>Удалить камеру <strong>{{ cameraToDelete?.name }}</strong> из реестра?</p>
 					</div>
 
 					<template #footer>
-						<div class="modal-actions">
+						<div class="modal-actions modal-actions--delete">
 							<UButton color="neutral" variant="outline" size="lg" @click="isDeleteModalOpen = false">
 								Отмена
 							</UButton>
-							<UButton
-								color="error"
-								size="lg"
-								:loading="isDeleting"
-								@click="confirmDeleteCamera"
-							>
+							<UButton color="error" size="lg" :loading="isDeleting" @click="confirmDeleteCamera">
 								Удалить камеру
 							</UButton>
 						</div>
@@ -472,7 +466,7 @@ onMounted(() => {
 
 .cameras-layout {
 	display: grid;
-	gap: 0.85rem;
+	gap: 0.9rem;
 }
 
 .cameras-hero,
@@ -493,17 +487,18 @@ onMounted(() => {
 	align-items: end;
 	justify-content: space-between;
 	gap: 1rem;
-	padding: 1.1rem 1.2rem;
-	border-radius: 1.8rem;
+	padding: 1.15rem 1.25rem;
+	border-radius: 1.85rem;
 }
 
 .cameras-hero__copy,
 .cameras-hero__actions,
 .hero-summary,
-.camera-card,
-.camera-card__body,
-.camera-card__meta,
+.camera-card__content,
+.camera-card__identity,
+.camera-card__signal-grid,
 .camera-card__field,
+.camera-card__field-copy,
 .modal-header__copy,
 .modal-form,
 .form-field,
@@ -513,12 +508,18 @@ onMounted(() => {
 }
 
 .cameras-hero__actions {
-	width: min(100%, 30rem);
+	width: min(100%, 34rem);
 }
 
 .hero-summary-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+}
+
+.hero-actions-row {
+	display: grid;
+	grid-template-columns: auto 1fr;
 	gap: 0.75rem;
 }
 
@@ -540,13 +541,14 @@ onMounted(() => {
 .cameras-title,
 .camera-list-panel__title,
 .camera-card__name,
-.modal-title {
+.modal-title,
+.cameras-empty h3 {
 	margin: 0;
 	color: #f8fafc;
 }
 
 .cameras-title {
-	font-size: clamp(1.8rem, 4vw, 2.6rem);
+	font-size: clamp(1.9rem, 4vw, 2.7rem);
 	font-weight: 700;
 	letter-spacing: -0.04em;
 }
@@ -555,27 +557,28 @@ onMounted(() => {
 .camera-list-panel__eyebrow,
 .control-label,
 .modal-subtitle,
-.form-hint,
 .camera-card__field span,
-.delete-confirm p {
+.camera-card__eyebrow,
+.delete-confirm p,
+.cameras-empty p {
 	color: rgba(203, 213, 225, 0.72);
 }
 
 .cameras-subtitle {
-	max-width: 48rem;
+	max-width: 54rem;
 	margin: 0.5rem 0 0;
-	line-height: 1.6;
+	line-height: 1.65;
 }
 
 .hero-summary {
-	padding: 0.85rem 1rem;
+	padding: 0.9rem 1rem;
 	border-radius: 1.25rem;
 	border: 1px solid rgba(255, 255, 255, 0.06);
 	background: rgba(15, 23, 42, 0.64);
 }
 
 .hero-summary__value {
-	font-size: 1.7rem;
+	font-size: 1.75rem;
 	font-weight: 700;
 	line-height: 1;
 	color: #f8fafc;
@@ -600,20 +603,26 @@ onMounted(() => {
 }
 
 .control-panel {
-	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr) auto auto;
 	align-items: end;
 }
 
 .control-panel__search,
-.control-panel__result {
+.control-panel__result,
+.control-panel__actions {
 	display: grid;
 	gap: 0.5rem;
 }
 
+.control-panel__actions {
+	align-content: end;
+}
+
 .control-label,
-.camera-list-panel__eyebrow {
+.camera-list-panel__eyebrow,
+.camera-card__eyebrow {
 	margin: 0;
-	font-size: 0.75rem;
+	font-size: 0.74rem;
 	text-transform: uppercase;
 	letter-spacing: 0.12em;
 }
@@ -629,9 +638,9 @@ onMounted(() => {
 }
 
 .camera-list-panel__header,
-.camera-card__actions,
 .modal-header,
-.modal-actions {
+.modal-actions,
+.camera-card__footer {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -645,14 +654,16 @@ onMounted(() => {
 
 .camera-list {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 1rem;
+	gap: 1.1rem;
 }
 
 .camera-card {
+	display: grid;
+	grid-template-columns: minmax(21rem, 24rem) minmax(0, 1fr);
+	gap: 1.15rem;
 	position: relative;
-	padding: 0.95rem;
-	border-radius: 1.45rem;
+	padding: 1.05rem;
+	border-radius: 1.6rem;
 	overflow: hidden;
 }
 
@@ -660,59 +671,85 @@ onMounted(() => {
 	content: "";
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), transparent 40%, rgba(248, 113, 113, 0.05));
+	background:
+		linear-gradient(90deg, rgba(56, 189, 248, 0.08), transparent 36%),
+		linear-gradient(135deg, transparent 35%, rgba(248, 113, 113, 0.06));
 	pointer-events: none;
 }
 
 .camera-card--skeleton {
-	min-height: 24rem;
+	min-height: 18rem;
 	background: rgba(51, 65, 85, 0.38);
 }
 
-.camera-card__body,
-.camera-card__actions {
+.camera-card__preview-column,
+.camera-card__content {
 	position: relative;
 	z-index: 1;
+	min-width: 0;
 }
 
-.camera-card__identity {
-	display: flex;
-	align-items: start;
-	justify-content: space-between;
+.camera-card__content {
+	align-content: start;
 	gap: 1rem;
+	padding: 0.15rem 0.15rem 0.15rem 0.2rem;
 }
 
-.camera-card__badge {
-	white-space: nowrap;
+.camera-card__identity-main {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 0.75rem;
+	align-items: start;
+}
+
+.camera-card__status {
+	align-self: start;
+	border-radius: 999px;
 }
 
 .camera-card__name {
-	font-size: 1.08rem;
+	font-size: 1.32rem;
 	font-weight: 700;
+	letter-spacing: -0.02em;
 }
 
 .camera-card__location {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.45rem;
-	margin: 0.35rem 0 0;
+	margin: 0;
 	color: rgba(226, 232, 240, 0.78);
 }
 
 .camera-card__description {
 	margin: 0;
-	line-height: 1.6;
+	line-height: 1.65;
 	color: rgba(226, 232, 240, 0.82);
+	max-width: 68ch;
 }
 
-.camera-card__meta {
-	grid-template-columns: minmax(0, 1fr);
+.camera-card__signal-grid {
+	grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+	gap: 0.9rem;
 }
 
 .camera-card__field {
-	padding: 0.8rem 0.9rem;
-	border-radius: 1rem;
-	background: rgba(15, 23, 42, 0.6);
+	padding: 1rem 1.05rem;
+	border-radius: 1.15rem;
+	background:
+		linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.62)),
+		linear-gradient(135deg, rgba(56, 189, 248, 0.06), transparent);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.03),
+		0 14px 38px rgba(2, 6, 23, 0.18);
+	min-width: 0;
+}
+
+.camera-card__field--webrtc {
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.9rem;
 }
 
 .camera-card__field strong,
@@ -721,9 +758,14 @@ onMounted(() => {
 	overflow-wrap: anywhere;
 }
 
-.camera-card__actions {
-	flex-wrap: wrap;
-	justify-content: flex-start;
+.camera-meta-row__action {
+	min-width: 18rem;
+	justify-content: center;
+}
+
+.camera-card__footer {
+	padding-top: 0.95rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .cameras-empty {
@@ -746,17 +788,6 @@ onMounted(() => {
 	background: rgba(15, 23, 42, 0.72);
 	font-size: 2rem;
 	color: rgba(203, 213, 225, 0.6);
-}
-
-.cameras-empty h3,
-.form-label {
-	margin: 0;
-	color: #f8fafc;
-}
-
-.cameras-empty p,
-.modal-subtitle {
-	margin: 0;
 }
 
 .modal-header {
@@ -784,6 +815,11 @@ onMounted(() => {
 	font-weight: 600;
 }
 
+.modal-subtitle,
+.cameras-empty p {
+	margin: 0;
+}
+
 .form-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -796,12 +832,9 @@ onMounted(() => {
 }
 
 .form-label {
-	font-size: 0.88rem;
-}
-
-.form-hint {
 	margin: 0;
-	font-size: 0.76rem;
+	font-size: 0.88rem;
+	color: #f8fafc;
 }
 
 .delete-confirm {
@@ -811,6 +844,7 @@ onMounted(() => {
 .modal-actions {
 	flex-wrap: wrap;
 	justify-content: flex-end;
+	width: 100%;
 }
 
 .modal-submit-button {
@@ -818,10 +852,20 @@ onMounted(() => {
 	justify-content: center;
 }
 
+@media (max-width: 1100px) {
+	.camera-card,
+	.camera-card__signal-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
 @media (max-width: 900px) {
 	.control-panel,
 	.form-grid,
-	.hero-summary-grid {
+	.hero-summary-grid,
+	.hero-actions-row,
+	.camera-card__identity-main,
+	.camera-card__field--webrtc {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
@@ -835,19 +879,22 @@ onMounted(() => {
 	.control-panel,
 	.camera-list-panel,
 	.camera-card {
-		padding: 0.85rem;
+		padding: 0.9rem;
 	}
 
 	.cameras-hero__actions {
 		width: 100%;
 	}
 
-	.camera-card__identity,
-	.camera-card__actions,
+	.camera-card__footer,
 	.modal-header,
 	.modal-actions {
 		flex-direction: column;
 		align-items: stretch;
+	}
+
+	.camera-meta-row__action {
+		min-width: 0;
 	}
 }
 </style>
