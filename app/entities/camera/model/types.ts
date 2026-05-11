@@ -1,19 +1,24 @@
-export type CameraStatus = "normal" | "fire" | "smoke";
-export type CameraStatusFilter = "all" | CameraStatus;
-
 export interface Camera {
 	id: string;
 	name: string;
+	rtsp_url: string;
+	webrtc_url: string;
+	description: string;
 	location: string;
-	url: string;
-	isActive: boolean;
-	status: CameraStatus;
-	lastSeenAt: string | null;
-	createdAt: string;
 }
 
 export interface CameraPayload {
 	name: string;
+	rtsp_url: string;
+	webrtc_url: string;
+	description: string;
 	location: string;
-	url: string;
+}
+
+export interface CameraSource {
+	name: string;
+	rtsp_url: string;
+	webrtc_url: string;
+	description: string;
+	location: string;
 }

@@ -1,75 +1,52 @@
-# Nuxt Minimal Starter
-
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+# Frontend
 
 ## Setup
 
-Make sure to install dependencies:
+Install dependencies:
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Create local environment variables:
 
 ```bash
-# npm
-npm run dev
+cp .env.example .env
+```
 
-# pnpm
+Available runtime variables:
+
+```bash
+NUXT_PUBLIC_BACKEND_BASE_URL=http://127.0.0.1:8000
+NUXT_PUBLIC_BACKEND_API_PREFIX=/api
+NUXT_PUBLIC_MEDIAMTX_BASE_URL=http://127.0.0.1:8889
+NUXT_PUBLIC_MEDIAMTX_CONTROL_API_URL=http://127.0.0.1:9997/v3
+```
+
+## Development
+
+```bash
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+## Production build
 
 ```bash
-# npm
-npm run build
-
-# pnpm
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## API integration
+
+The frontend now includes:
+
+- a shared HTTP client with timeout, bearer token injection and normalized API errors
+- backend service modules for auth and cameras
+- MediaMTX helpers for browser, WHEP and WHIP URLs
+- MediaMTX Control API access through `/v3/paths/list`
+
+MediaMTX references used for the integration:
+
+- WebRTC browser page: `http://host:8889/<streamPath>`
+- WHEP endpoint: `http://host:8889/<streamPath>/whep`
+- Control API list paths: `http://host:9997/v3/paths/list`

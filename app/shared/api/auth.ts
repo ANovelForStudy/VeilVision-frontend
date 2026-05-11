@@ -1,36 +1,49 @@
-import type { LoginCredentials, LoginResponse } from '~/entities/session/model/types'
+import type { LoginCredentials, LoginResponse, SessionUser } from "~/entities/session/model/types";
+import { apiRequest } from "~/shared/api/http";
 
-const DEMO_ACCOUNT = {
-  email: 'operator@yolo-firewatch.ai',
-  password: 'YOLO-Fire-2026!',
-  user: {
-    id: 'usr_01',
-    name: 'Elena Volkova',
-    email: 'operator@yolo-firewatch.ai',
-    role: 'Computer Vision Engineer',
-    workspace: 'YOLO FireWatch Lab'
-  }
-} as const
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-export async function loginWithEmail(credentials: LoginCredentials): Promise<LoginResponse> {
-  await delay(900)
-
-  const email = credentials.email.trim().toLowerCase()
-  const password = credentials.password.trim()
-
-  if (email !== DEMO_ACCOUNT.email || password !== DEMO_ACCOUNT.password) {
-    throw new Error('Неверный email или пароль. Используйте демонстрационный доступ оператора ниже.')
-  }
-
-  return {
-    token: 'demo-session-token',
-    user: { ...DEMO_ACCOUNT.user }
-  }
+interface RawLoginResponse {
+	token?: string;
+	access_token?: string;
+	auth_token?: string;
+	user?: Partial<SessionUser> | null;
 }
 
+const DEFAULT_LOGIN_ENDPOINT = "/auth/login";
+
 export const demoCredentials = {
-  email: DEMO_ACCOUNT.email,
-  password: DEMO_ACCOUNT.password
+	email: "operator@yolo-firewatch.ai",
+	password: "YOLO-Fire-2026!",
+};
+
+export async function loginWithEmail(credentials: LoginCredentials): Promise<LoginResponse> {
+	const response = await apiRequest<RawLoginResponse>(DEFAULT_LOGIN_ENDPOINT, {
+		method: "POST",
+		body: {
+			email: credentials.email.trim(),
+			password: credentials.password,
+			remember: credentials.remember,
+		},
+		requiresAuth: false,
+	});
+
+	const token = response.token ?? response.access_token ?? response.auth_token;
+
+	if (!token) {
+		throw new Error("Backend auth response does not contain an access token.");
+	}
+
+	return {
+		token,
+		user: normalizeSessionUser(response.user, credentials.email),
+	};
+}
+
+function normalizeSessionUser(user: RawLoginResponse["user"], fallbackEmail: string): SessionUser {
+	return {
+		id: user?.id ?? "unknown-user",
+		name: user?.name ?? user?.email ?? fallbackEmail,
+		email: user?.email ?? fallbackEmail,
+		role: user?.role ?? "Operator",
+		workspace: user?.workspace ?? "Default workspace",
+	};
 }
