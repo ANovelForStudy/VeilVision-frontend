@@ -43,7 +43,8 @@ async function loadCamera() {
 		camera.value = await fetchCameraById(cameraId.value);
 	} catch (error) {
 		console.error("Failed to fetch camera:", error);
-		errorMessage.value = error instanceof Error ? error.message : "Не удалось загрузить карточку камеры.";
+		errorMessage.value =
+			error instanceof Error ? error.message : "Не удалось загрузить карточку камеры.";
 	} finally {
 		isLoading.value = false;
 	}
@@ -88,7 +89,8 @@ async function submitCameraUpdate() {
 		isEditModalOpen.value = false;
 	} catch (error) {
 		console.error("Failed to update camera:", error);
-		errorMessage.value = error instanceof Error ? error.message : "Не удалось обновить данные камеры.";
+		errorMessage.value =
+			error instanceof Error ? error.message : "Не удалось обновить данные камеры.";
 	} finally {
 		isUpdating.value = false;
 	}
@@ -124,7 +126,8 @@ function openWebRtcDirect() {
 
 useSeoMeta({
 	title: () => (camera.value ? `${camera.value.name} | Камера` : "Камера"),
-	description: "Подробная карточка камеры с обзором параметров, предпросмотром и управлением подключением.",
+	description:
+		"Подробная карточка камеры с обзором параметров, предпросмотром и управлением подключением.",
 });
 
 watch(cameraId, loadCamera, { immediate: true });
@@ -135,11 +138,28 @@ watch(cameraId, loadCamera, { immediate: true });
 		<UContainer class="camera-details-layout max-w-none px-3 sm:px-4 lg:px-5">
 			<div class="camera-details-toolbar">
 				<div class="camera-details-toolbar__actions">
-					<UButton color="neutral" variant="outline" icon="i-lucide-arrow-left" size="lg" @click="goBack">
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-lucide-arrow-left"
+						size="md"
+						class="font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+						@click="goBack"
+					>
 						Вернуться к списку камер
 					</UButton>
-					<UButton color="neutral" variant="outline" icon="i-lucide-layout-dashboard" size="lg" to="/dashboard">
-						На dashboard
+
+					<div class="h-4 w-px bg-gray-200 dark:bg-gray-800"></div>
+
+					<UButton
+						color="neutral"
+						variant="ghost"
+						icon="i-lucide-home"
+						size="md"
+						class="font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+						to="/dashboard"
+					>
+						На главную
 					</UButton>
 				</div>
 			</div>
@@ -152,9 +172,15 @@ watch(cameraId, loadCamera, { immediate: true });
 				:title="errorMessage"
 			/>
 
-			<section v-if="isLoading" class="camera-details-skeleton" />
+			<section
+				v-if="isLoading"
+				class="camera-details-skeleton"
+			/>
 
-			<section v-else-if="camera" class="camera-details-card">
+			<section
+				v-else-if="camera"
+				class="camera-details-card"
+			>
 				<header class="camera-hero">
 					<div class="camera-hero__copy">
 						<div class="camera-hero__badge">
@@ -169,40 +195,84 @@ watch(cameraId, loadCamera, { immediate: true });
 									{{ camera.location }}
 								</p>
 							</div>
-							<UBadge color="success" variant="soft" class="camera-hero__status">
+							<UBadge
+								color="success"
+								variant="soft"
+								class="camera-hero__status"
+							>
 								Активна
 							</UBadge>
 						</div>
 						<p class="camera-hero__description">
-							{{ camera.description || "Камера подключена к реестру. Здесь можно просмотреть основные параметры и быстро обновить конфигурацию." }}
+							{{
+								camera.description ||
+								"Камера подключена к реестру. Здесь можно просмотреть основные параметры и быстро обновить конфигурацию."
+							}}
 						</p>
 					</div>
 
-					<div class="camera-hero__actions">
-						<div class="camera-hero__stats">
-							<div class="camera-stat">
-								<span class="camera-stat__label">RTSP</span>
-								<strong class="camera-stat__value">Подключён</strong>
+					<div
+						class="inline-flex flex-col gap-5 p-5 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm max-w-4xl"
+					>
+						<div
+							class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4"
+						>
+							<div class="flex items-center gap-2">
+								<span
+									class="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"
+								></span>
+								<h3
+									class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+								>
+									Статус трансляции
+								</h3>
 							</div>
-							<div class="camera-stat">
-								<span class="camera-stat__label">WebRTC</span>
-								<strong class="camera-stat__value">Доступен</strong>
+
+							<div class="flex gap-3">
+								<div
+									class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-800 dark:text-gray-200"
+								>
+									<span class="text-gray-400">RTSP:</span> Активен
+								</div>
+								<div
+									class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-800 dark:text-gray-200"
+								>
+									<span class="text-gray-400">WebRTC:</span> Доступен
+								</div>
 							</div>
 						</div>
 
-						<div class="camera-hero__buttons">
-							<UButton color="primary" size="lg" icon="i-lucide-pencil-line" @click="openEditModal">
+						<div class="grid grid-cols-1 sm:flex sm:items-center gap-3">
+							<UButton
+								color="primary"
+								size="lg"
+								icon="i-lucide-pencil-line"
+								class="px-5 font-semibold justify-center sm:justify-start"
+								@click="openEditModal"
+							>
 								Редактировать камеру
 							</UButton>
-							<UButton color="neutral" variant="outline" size="lg" icon="i-lucide-external-link" @click="openWebRtcDirect">
+
+							<UButton
+								color="neutral"
+								variant="outline"
+								size="lg"
+								icon="i-lucide-external-link"
+								class="px-5 font-semibold justify-center sm:justify-start"
+								@click="openWebRtcDirect"
+							>
 								Открыть WebRTC напрямую
 							</UButton>
+
+							<div class="hidden sm:block flex-1"></div>
+
 							<UButton
 								color="error"
 								variant="soft"
 								size="lg"
 								icon="i-lucide-trash-2"
 								:loading="isDeleting"
+								class="px-5 font-semibold justify-center sm:justify-start hover:bg-error-50 dark:hover:bg-error-950/30"
 								@click="removeCamera"
 							>
 								Удалить камеру
@@ -211,69 +281,177 @@ watch(cameraId, loadCamera, { immediate: true });
 					</div>
 				</header>
 
-				<div class="camera-details-grid">
-					<section class="camera-preview-panel">
-						<div class="camera-panel__header">
-							<div>
-								<p class="camera-panel__eyebrow">Live Preview</p>
-								<h2 class="camera-panel__title">Предпросмотр потока</h2>
-							</div>
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch w-full px-4 py-6">
+					<section
+						class="lg:col-span-2 flex flex-col rounded-3xl border border-gray-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:border-gray-800/60 dark:bg-gray-900 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]"
+					>
+						<div
+							class="p-6 border-b border-gray-100 dark:border-gray-800/60 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-900 flex-none"
+						>
+							<p
+								class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1"
+								>Live Preview</p
+							>
+							<h2
+								class="text-xl font-semibold text-gray-900 dark:text-white tracking-tight"
+								>Предпросмотр потока</h2
+							>
 						</div>
-						<CameraPreview :title="camera.name" :location="camera.location" :webrtc-url="camera.webrtc_url" />
+						<div class="p-6 bg-gray-950/5 flex-1 flex flex-col justify-center">
+							<CameraPreview
+								:title="camera.name"
+								:location="camera.location"
+								:webrtc-url="camera.webrtc_url"
+								class="rounded-2xl overflow-hidden shadow-inner w-full h-full object-cover"
+							/>
+						</div>
 					</section>
 
-					<section class="camera-info-panel">
-						<div class="camera-panel__header">
-							<div>
-								<p class="camera-panel__eyebrow">Configuration</p>
-								<h2 class="camera-panel__title">Параметры камеры</h2>
-							</div>
+					<section
+						class="flex flex-col rounded-3xl border border-gray-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:border-gray-800/60 dark:bg-gray-900 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]"
+					>
+						<div
+							class="p-6 border-b border-gray-100 dark:border-gray-800/60 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-900 flex-none"
+						>
+							<p
+								class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-1"
+								>Configuration</p
+							>
+							<h2
+								class="text-xl font-semibold text-gray-900 dark:text-white tracking-tight"
+								>Параметры камеры</h2
+							>
 						</div>
 
-						<div class="camera-info-grid">
-							<div class="camera-info-card">
-								<span>Название</span>
-								<strong>{{ camera.name }}</strong>
+						<div
+							class="p-6 divide-y divide-gray-100 dark:divide-gray-800/60 flex-1 flex flex-col justify-between"
+						>
+							<div class="py-3 first:pt-0 group">
+								<span
+									class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1"
+									>Название</span
+								>
+								<strong
+									class="block text-sm font-semibold text-gray-900 dark:text-white tracking-tight"
+									>{{ camera.name }}</strong
+								>
 							</div>
-							<div class="camera-info-card">
-								<span>Локация</span>
-								<strong>{{ camera.location }}</strong>
+
+							<div class="py-3 group">
+								<span
+									class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1"
+									>Локация</span
+								>
+								<strong
+									class="block text-sm font-semibold text-gray-900 dark:text-white tracking-tight"
+									>{{ camera.location }}</strong
+								>
 							</div>
-							<div class="camera-info-card camera-info-card--full">
-								<span>RTSP source</span>
-								<strong>{{ camera.rtsp_url }}</strong>
+
+							<div class="py-3 group">
+								<span
+									class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5"
+									>RTSP source</span
+								>
+								<div
+									class="relative flex items-center rounded-lg border border-gray-150 bg-gray-50 pl-3 pr-10 py-2 dark:border-gray-800 dark:bg-gray-950 shadow-sm transition-colors focus-within:border-gray-300 dark:focus-within:border-gray-700"
+								>
+									<span
+										class="text-xs font-mono font-medium text-gray-700 dark:text-gray-300 truncate w-full select-all"
+									>
+										{{ camera.rtsp_url }}
+									</span>
+									<div class="absolute right-1 inset-y-0 flex items-center">
+										<UButton
+											color="neutral"
+											variant="ghost"
+											icon="i-lucide-copy"
+											size="xs"
+											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+											@click="navigator.clipboard.writeText(camera.rtsp_url)"
+										/>
+									</div>
+								</div>
 							</div>
-							<div class="camera-info-card camera-info-card--full">
-								<span>WebRTC endpoint</span>
-								<strong>{{ camera.webrtc_url }}</strong>
+
+							<div class="py-3 group">
+								<span
+									class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5"
+									>WebRTC endpoint</span
+								>
+								<div
+									class="relative flex items-center rounded-lg border border-gray-150 bg-gray-50 pl-3 pr-10 py-2 dark:border-gray-800 dark:bg-gray-950 shadow-sm transition-colors focus-within:border-gray-300 dark:focus-within:border-gray-700"
+								>
+									<span
+										class="text-xs font-mono font-medium text-gray-700 dark:text-gray-300 truncate w-full select-all"
+									>
+										{{ camera.webrtc_url }}
+									</span>
+									<div class="absolute right-1 inset-y-0 flex items-center">
+										<UButton
+											color="neutral"
+											variant="ghost"
+											icon="i-lucide-copy"
+											size="xs"
+											class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+											@click="
+												navigator.clipboard.writeText(camera.webrtc_url)
+											"
+										/>
+									</div>
+								</div>
 							</div>
-							<div class="camera-info-card camera-info-card--full">
-								<span>Описание</span>
-								<strong>{{ camera.description || "Описание пока не заполнено." }}</strong>
+
+							<div class="py-3 last:pb-0 group flex-1 flex flex-col min-h-[60px]">
+								<span
+									class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-1"
+									>Описание</span
+								>
+								<p
+									class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-normal flex-1"
+								>
+									{{ camera.description || "Описание пока не заполнено." }}
+								</p>
 							</div>
 						</div>
 					</section>
 				</div>
 			</section>
 
-			<section v-else-if="isNotFound" class="camera-details-empty">
+			<section
+				v-else-if="isNotFound"
+				class="camera-details-empty"
+			>
 				<div class="camera-details-empty__icon">
 					<UIcon name="i-lucide-camera-off" />
 				</div>
 				<h2>Камера не найдена</h2>
 				<p>Проверь идентификатор в адресной строке или вернись к общему реестру камер.</p>
 				<div class="camera-details-empty__actions">
-					<UButton color="neutral" variant="outline" size="lg" @click="goBack">
+					<UButton
+						color="neutral"
+						variant="outline"
+						size="lg"
+						@click="goBack"
+					>
 						Вернуться назад
 					</UButton>
-					<UButton color="primary" size="lg" to="/cameras">
+					<UButton
+						color="primary"
+						size="lg"
+						to="/cameras"
+					>
 						Перейти к списку камер
 					</UButton>
 				</div>
 			</section>
 		</UContainer>
 
-		<UModal :open="isEditModalOpen" :content="{ class: 'sm:max-w-2xl' }" @update:open="isEditModalOpen = $event">
+		<UModal
+			:open="isEditModalOpen"
+			:content="{ class: 'sm:max-w-2xl' }"
+			@update:open="isEditModalOpen = $event"
+		>
 			<template #content>
 				<UCard
 					:ui="{
@@ -289,27 +467,55 @@ watch(cameraId, loadCamera, { immediate: true });
 							</div>
 							<div class="modal-header__copy">
 								<h3 class="modal-title">Редактирование камеры</h3>
-								<p class="modal-subtitle">Изменения будут отправлены в backend через PATCH endpoint.</p>
+								<p class="modal-subtitle"
+									>Изменения будут отправлены в backend через PATCH endpoint.</p
+								>
 							</div>
-							<UButton color="neutral" variant="ghost" icon="i-lucide-x" size="sm" @click="isEditModalOpen = false" />
+							<UButton
+								color="neutral"
+								variant="ghost"
+								icon="i-lucide-x"
+								size="sm"
+								@click="isEditModalOpen = false"
+							/>
 						</div>
 					</template>
 
-					<form class="modal-form" @submit.prevent="submitCameraUpdate">
+					<form
+						class="modal-form"
+						@submit.prevent="submitCameraUpdate"
+					>
 						<div class="form-grid">
 							<div class="form-field">
 								<label class="form-label">Название</label>
-								<UInput v-model="editForm.name" variant="subtle" class="w-full" size="lg" required />
+								<UInput
+									v-model="editForm.name"
+									variant="subtle"
+									class="w-full"
+									size="lg"
+									required
+								/>
 							</div>
 
 							<div class="form-field">
 								<label class="form-label">Локация</label>
-								<UInput v-model="editForm.location" variant="subtle" class="w-full" size="lg" required />
+								<UInput
+									v-model="editForm.location"
+									variant="subtle"
+									class="w-full"
+									size="lg"
+									required
+								/>
 							</div>
 
 							<div class="form-field form-field--full">
 								<label class="form-label">Описание</label>
-								<UTextarea v-model="editForm.description" variant="subtle" class="w-full" :rows="4" />
+								<UTextarea
+									v-model="editForm.description"
+									variant="subtle"
+									class="w-full"
+									:rows="4"
+								/>
 							</div>
 
 							<div class="form-field form-field--full">
@@ -340,10 +546,21 @@ watch(cameraId, loadCamera, { immediate: true });
 
 					<template #footer>
 						<div class="modal-actions">
-							<UButton color="neutral" variant="outline" size="lg" @click="isEditModalOpen = false">
+							<UButton
+								color="neutral"
+								variant="outline"
+								size="lg"
+								@click="isEditModalOpen = false"
+							>
 								Отмена
 							</UButton>
-							<UButton color="primary" size="lg" :loading="isUpdating" class="modal-submit-button" @click="submitCameraUpdate">
+							<UButton
+								color="primary"
+								size="lg"
+								:loading="isUpdating"
+								class="modal-submit-button"
+								@click="submitCameraUpdate"
+							>
 								Сохранить изменения
 							</UButton>
 						</div>
@@ -376,7 +593,7 @@ watch(cameraId, loadCamera, { immediate: true });
 .modal-actions {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: left;
 	gap: 1rem;
 }
 

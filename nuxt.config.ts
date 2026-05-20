@@ -25,5 +25,8 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
   devtools: { enabled: true },
-  compatibilityDate: '2026-04-07'
+  compatibilityDate: '2026-04-07',
+  // routeRules: {
+  //   '/events': { ssr: false }
+  // }
 })

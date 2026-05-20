@@ -36,8 +36,8 @@ const filteredCameras = computed(() => {
 	}
 
 	return cameras.value.filter((camera) =>
-		[camera.name, camera.location, camera.description, camera.rtsp_url, camera.webrtc_url].some((value) =>
-			value.toLowerCase().includes(query),
+		[camera.name, camera.location, camera.description, camera.rtsp_url, camera.webrtc_url].some(
+			(value) => value.toLowerCase().includes(query),
 		),
 	);
 });
@@ -50,7 +50,8 @@ async function fetchCameras() {
 		cameras.value = await fetchCamerasRequest();
 	} catch (error) {
 		console.error("Failed to fetch cameras:", error);
-		errorMessage.value = error instanceof Error ? error.message : "Не удалось загрузить список камер.";
+		errorMessage.value =
+			error instanceof Error ? error.message : "Не удалось загрузить список камер.";
 	} finally {
 		isLoading.value = false;
 	}
@@ -140,7 +141,8 @@ function openCameraDetails(cameraId: string) {
 
 useSeoMeta({
 	title: "YOLO FireWatch Lab | Камеры",
-	description: "Реестр камер видеомониторинга: поиск, просмотр, создание и переход к детальной карточке камеры.",
+	description:
+		"Реестр камер видеомониторинга: поиск, просмотр, создание и переход к детальной карточке камеры.",
 });
 
 onMounted(fetchCameras);
@@ -158,8 +160,9 @@ onMounted(fetchCameras);
 					<div>
 						<h1 class="cameras-title">Камеры</h1>
 						<p class="cameras-subtitle">
-							Центральный реестр подключённых камер: здесь можно быстро найти нужную точку, открыть её
-							карточку, проверить поток и управлять составом видеоконтуров.
+							Центральный реестр подключённых камер: здесь можно быстро найти нужную
+							точку, открыть её карточку, проверить поток и управлять составом
+							видеоконтуров.
 						</p>
 					</div>
 				</div>
@@ -167,56 +170,105 @@ onMounted(fetchCameras);
 				<div class="cameras-hero__actions">
 					<div class="hero-summary-grid">
 						<div class="hero-summary">
+							<span class="hero-summary__label">Камер в реестре</span>
 							<span class="hero-summary__value">{{ cameras.length }}</span>
-							<span class="hero-summary__label">камер в реестре</span>
 						</div>
 						<div class="hero-summary">
+							<span class="hero-summary__label">В текущей выборке</span>
 							<span class="hero-summary__value">{{ filteredCameras.length }}</span>
-							<span class="hero-summary__label">в текущей выборке</span>
 						</div>
 					</div>
 
 					<div class="hero-actions-row">
-						<UButton color="neutral" variant="outline" size="lg" icon="i-lucide-layout-dashboard" to="/dashboard">
-							На dashboard
+						<UButton
+							color="neutral"
+							variant="ghost"
+							icon="i-lucide-home"
+							size="md"
+							class="font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+							to="/dashboard"
+						>
+							На главную
 						</UButton>
-						<UButton color="primary" size="lg" icon="i-lucide-plus" class="cameras-add-btn" @click="openCreateModal">
+						<UButton
+							color="primary"
+							size="lg"
+							icon="i-lucide-plus"
+							class="cameras-add-btn"
+							@click="openCreateModal"
+						>
 							Добавить камеру
 						</UButton>
 					</div>
 				</div>
 			</header>
 
-			<section class="control-panel">
-				<div class="control-panel__search">
-					<label class="control-label">Поиск камеры</label>
+			<section
+				class="flex flex-col md:flex-row md:items-end justify-between gap-4 p-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm"
+			>
+				<!-- Блок поиска -->
+				<div class="flex-1 min-w-[280px]">
+					<label
+						class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"
+					>
+						Поиск камеры
+					</label>
 					<UInput
 						v-model="searchQuery"
 						size="xl"
 						variant="subtle"
 						icon="i-lucide-search"
 						placeholder="Название, описание, локация, RTSP или WebRTC URL"
+						class="w-full"
 					/>
 				</div>
 
-				<div class="control-panel__actions">
+				<!-- Блок действий и результатов -->
+				<div class="flex items-center gap-4 sm:justify-end">
 					<UButton
 						color="neutral"
-						variant="outline"
+						variant="ghost"
 						size="xl"
-						icon="i-lucide-rotate-ccw"
 						:disabled="!hasActiveFilter"
 						@click="resetSearch"
+						class="relative overflow-hidden transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:pointer-events-none group"
+						:ui="{ rounded: 'rounded-lg' }"
 					>
-						Сбросить фильтр
-					</UButton>
-				</div>
+						<template #leading>
+							<UIcon
+								name="i-lucide-rotate-ccw"
+								class="w-5 h-5 transition-transform duration-500 ease-out"
+								:class="{
+									'group-hover:-rotate-180 text-error-500': hasActiveFilter,
+								}"
+							/>
+						</template>
 
-				<div class="control-panel__result">
-					<p class="control-label">Результат</p>
-					<p class="control-result">
-						Найдено <strong>{{ filteredCameras.length }}</strong> камер
-					</p>
+						<span
+							class="font-medium text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white"
+						>
+							Сбросить фильтр
+						</span>
+					</UButton>
+
+					<div class="hidden md:block h-9 w-px bg-gray-200 dark:bg-gray-700" />
+
+					<div class="flex flex-col justify-end text-right">
+						<p
+							class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hidden md:block mb-2"
+						>
+							Результат
+						</p>
+						<p
+							class="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap self-center md:self-end"
+						>
+							Найдено:
+							<span
+								class="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md ml-1"
+								>{{ filteredCameras.length }}</span
+							>
+						</p>
+					</div>
 				</div>
 			</section>
 
@@ -226,7 +278,11 @@ onMounted(fetchCameras);
 						<p class="camera-list-panel__eyebrow">Инвентаризация</p>
 						<h2 class="camera-list-panel__title">Все камеры</h2>
 					</div>
-					<UBadge color="neutral" variant="soft" class="rounded-full px-3 py-1">
+					<UBadge
+						color="neutral"
+						variant="soft"
+						class="rounded-full px-3 py-1"
+					>
 						{{ filteredCameras.length }} / {{ cameras.length }}
 					</UBadge>
 				</div>
@@ -239,11 +295,21 @@ onMounted(fetchCameras);
 					:title="errorMessage"
 				/>
 
-				<div v-if="isLoading" class="camera-list">
-					<div v-for="index in 4" :key="`camera-skeleton-${index}`" class="camera-card camera-card--skeleton" />
+				<div
+					v-if="isLoading"
+					class="camera-list"
+				>
+					<div
+						v-for="index in 4"
+						:key="`camera-skeleton-${index}`"
+						class="camera-card camera-card--skeleton"
+					/>
 				</div>
 
-				<div v-else-if="filteredCameras.length === 0" class="cameras-empty">
+				<div
+					v-else-if="filteredCameras.length === 0"
+					class="cameras-empty"
+				>
 					<div class="cameras-empty__icon">
 						<UIcon name="i-lucide-camera-off" />
 					</div>
@@ -251,12 +317,18 @@ onMounted(fetchCameras);
 					<p>Измени поисковый запрос или добавь новую камеру в реестр.</p>
 				</div>
 
-				<div v-else class="camera-list">
-					<article v-for="camera in filteredCameras" :key="camera.id" class="camera-card">
+				<div
+					v-else
+					class="camera-list"
+				>
+					<article
+						v-for="camera in filteredCameras"
+						:key="camera.id"
+						class="camera-card"
+					>
 						<div class="camera-card__preview-column">
 							<CameraPreview
 								:title="camera.name"
-								:location="camera.location"
 								:webrtc-url="camera.webrtc_url"
 								compact
 							/>
@@ -270,7 +342,11 @@ onMounted(fetchCameras);
 											<p class="camera-card__eyebrow">Камера</p>
 											<h3 class="camera-card__name">{{ camera.name }}</h3>
 										</div>
-										<UBadge color="success" variant="soft" class="camera-card__status">
+										<UBadge
+											color="success"
+											variant="soft"
+											class="camera-card__status"
+										>
 											Подключена
 										</UBadge>
 									</div>
@@ -281,7 +357,10 @@ onMounted(fetchCameras);
 								</div>
 							</div>
 
-							<p v-if="camera.description" class="camera-card__description">
+							<p
+								v-if="camera.description"
+								class="camera-card__description"
+							>
 								{{ camera.description }}
 							</p>
 
@@ -334,7 +413,11 @@ onMounted(fetchCameras);
 			</section>
 		</UContainer>
 
-		<UModal :open="isCreateModalOpen" :content="{ class: 'sm:max-w-2xl' }" @update:open="isCreateModalOpen = $event">
+		<UModal
+			:open="isCreateModalOpen"
+			:content="{ class: 'sm:max-w-2xl' }"
+			@update:open="isCreateModalOpen = $event"
+		>
 			<template #content>
 				<UCard
 					:ui="{
@@ -350,27 +433,55 @@ onMounted(fetchCameras);
 							</div>
 							<div class="modal-header__copy">
 								<h3 class="modal-title">Добавление камеры</h3>
-								<p class="modal-subtitle">Форма отправляет данные напрямую в POST endpoint камеры.</p>
+								<p class="modal-subtitle"
+									>Форма отправляет данные напрямую в POST endpoint камеры.</p
+								>
 							</div>
-							<UButton color="neutral" variant="ghost" icon="i-lucide-x" size="sm" @click="isCreateModalOpen = false" />
+							<UButton
+								color="neutral"
+								variant="ghost"
+								icon="i-lucide-x"
+								size="sm"
+								@click="isCreateModalOpen = false"
+							/>
 						</div>
 					</template>
 
-					<form class="modal-form" @submit.prevent="submitCreateCamera">
+					<form
+						class="modal-form"
+						@submit.prevent="submitCreateCamera"
+					>
 						<div class="form-grid">
 							<div class="form-field">
 								<label class="form-label">Название</label>
-								<UInput v-model="createForm.name" variant="subtle" class="w-full" size="lg" required />
+								<UInput
+									v-model="createForm.name"
+									variant="subtle"
+									class="w-full"
+									size="lg"
+									required
+								/>
 							</div>
 
 							<div class="form-field">
 								<label class="form-label">Локация</label>
-								<UInput v-model="createForm.location" variant="subtle" class="w-full" size="lg" required />
+								<UInput
+									v-model="createForm.location"
+									variant="subtle"
+									class="w-full"
+									size="lg"
+									required
+								/>
 							</div>
 
 							<div class="form-field form-field--full">
 								<label class="form-label">Описание</label>
-								<UTextarea v-model="createForm.description" variant="subtle" class="w-full" :rows="4" />
+								<UTextarea
+									v-model="createForm.description"
+									variant="subtle"
+									class="w-full"
+									:rows="4"
+								/>
 							</div>
 
 							<div class="form-field form-field--full">
@@ -401,10 +512,21 @@ onMounted(fetchCameras);
 
 					<template #footer>
 						<div class="modal-actions">
-							<UButton color="neutral" variant="outline" size="lg" @click="isCreateModalOpen = false">
+							<UButton
+								color="neutral"
+								variant="outline"
+								size="lg"
+								@click="isCreateModalOpen = false"
+							>
 								Отмена
 							</UButton>
-							<UButton color="primary" size="lg" :loading="isSubmitting" class="modal-submit-button" @click="submitCreateCamera">
+							<UButton
+								color="primary"
+								size="lg"
+								:loading="isSubmitting"
+								class="modal-submit-button"
+								@click="submitCreateCamera"
+							>
 								Создать камеру
 							</UButton>
 						</div>
@@ -413,7 +535,11 @@ onMounted(fetchCameras);
 			</template>
 		</UModal>
 
-		<UModal :open="isDeleteModalOpen" :content="{ class: 'sm:max-w-md' }" @update:open="isDeleteModalOpen = $event">
+		<UModal
+			:open="isDeleteModalOpen"
+			:content="{ class: 'sm:max-w-md' }"
+			@update:open="isDeleteModalOpen = $event"
+		>
 			<template #content>
 				<UCard
 					:ui="{
@@ -435,15 +561,28 @@ onMounted(fetchCameras);
 					</template>
 
 					<div class="delete-confirm">
-						<p>Удалить камеру <strong>{{ cameraToDelete?.name }}</strong> из реестра?</p>
+						<p
+							>Удалить камеру <strong>{{ cameraToDelete?.name }}</strong> из
+							реестра?</p
+						>
 					</div>
 
 					<template #footer>
 						<div class="modal-actions modal-actions--delete">
-							<UButton color="neutral" variant="outline" size="lg" @click="isDeleteModalOpen = false">
+							<UButton
+								color="neutral"
+								variant="outline"
+								size="lg"
+								@click="isDeleteModalOpen = false"
+							>
 								Отмена
 							</UButton>
-							<UButton color="error" size="lg" :loading="isDeleting" @click="confirmDeleteCamera">
+							<UButton
+								color="error"
+								size="lg"
+								:loading="isDeleting"
+								@click="confirmDeleteCamera"
+							>
 								Удалить камеру
 							</UButton>
 						</div>
